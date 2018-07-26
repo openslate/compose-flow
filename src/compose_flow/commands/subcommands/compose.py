@@ -45,6 +45,7 @@ class Compose(PassthroughBaseSubcommand):
                         has_version_arg = True
                         break
         except FileNotFoundError:
+            self.logger.warning("Failed to find Dockerfile, not using build args.")
             pass
 
         extra_args = extra_args or self.args.extra_args
