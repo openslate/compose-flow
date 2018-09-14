@@ -12,27 +12,47 @@ class Publish(BaseSubcommand):
     """
     Subcommand for building and pushing Docker images
     """
+    rw_env = True
+    remote_action = True
+
+    def __init__(self, *args, **kwargs):
+        if 'load_cf_env' not in kwargs:
+            kwargs['load_cf_env'] = self.rw_env
+
+        super().__init__(*args, **kwargs)
+
     def build(self):
-        self.compose.run(extra_args=['build'])
+        compose = self.get_compose(check_profile=False)
+
+        compose.run(extra_args=['build'])
 
     @property
-    @lru_cache()
     def compose(self):
         """
         Returns a Compose subcommand
         """
-        from .compose import Compose
-
-        return Compose(self.workflow)
+        return self.get_compose()
 
     @classmethod
     def fill_subparser(cls, parser, subparser) -> None:
         pass
 
+    @lru_cache()
+    def get_compose(self, **kwargs):
+        from .compose import Compose
+
+        return Compose(self.workflow, **kwargs)
+
     def handle(self):
+        # only load up the basic environment for publish
+        self.update_runtime_environment(load_cf_env=False)
+
         self.build()
 
         self.push()
+
+    def is_missing_env_arg_okay(self):
+        return True
 
     @property
     def logger(self):
@@ -40,7 +60,9 @@ class Publish(BaseSubcommand):
 
     def push(self):
         docker_images = set()
-        for service_data in self.profile.data['services'].values():
+
+        profile = self.workflow.profile
+        for service_data in profile.data['services'].values():
             if service_data.get('build'):
                 docker_images.add(service_data.get('image'))
 

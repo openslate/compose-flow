@@ -35,6 +35,10 @@ class Task(BaseSubcommand):
 
         subcommand_args = command_split[2:]
 
+        remainder = self.workflow.args_remainder
+        if remainder:
+            subcommand_args.extend(remainder)
+
         subcommand.run(subcommand_args)
 
     def is_dirty_working_copy_okay(self, exc: Exception) -> bool:

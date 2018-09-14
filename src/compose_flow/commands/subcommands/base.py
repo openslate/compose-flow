@@ -1,3 +1,4 @@
+import logging
 import os
 
 from abc import ABC, abstractclassmethod
@@ -14,9 +15,20 @@ class BaseSubcommand(ABC):
     """
     dirty_working_copy_okay = False
 
-    def __init__(self, workflow):
-        self.profile = None  # populated in run()
+    # whether this subcommand should connect to the remote host
+    remote_action = True
+
+    # whether the env should be in read/write mode
+    rw_env = False
+
+    def __init__(self, workflow, load_cf_env=True):
         self.workflow = workflow
+
+        self.load_cf_env = load_cf_env
+
+    @property
+    def logger(self):
+        return logging.getLogger(f'{__name__}.{self.__class__.__name__}')
 
     @property
     def args(self):
@@ -58,7 +70,7 @@ class BaseSubcommand(ABC):
     def env_name(self):
         args = self.workflow.args
 
-        return f'{args.environment}-{args.project_name}'
+        return args.environment
 
     @abstractclassmethod
     def fill_subparser(cls, parser, subparser):
@@ -95,7 +107,7 @@ class BaseSubcommand(ABC):
 
         This defaults to False
         """
-        config = get_config()
+        config = get_config() or {}
         env = self.workflow.args.environment
 
         dirty_working_copy_okay = self.workflow.args.dirty or config.get('options', {}).get(env, {}).get(
@@ -133,9 +145,21 @@ class BaseSubcommand(ABC):
         if error:
             return f'\nError: {error}'
 
+    @property
+    def project_name(self):
+        args = self.workflow.args
+
+        return f'{self.env_name}-{args.project_name}'
+
     def run(self, *args, **kwargs):
+        subcommand = self.workflow.subcommand
+
         try:
-            self._setup_remote()
+            if subcommand.remote_action:
+                self.logger.debug('setup remote')
+                self._setup_remote()
+            else:
+                self.logger.debug('work locally')
         except errors.NotConnected as exc:
             if not self.is_not_connected_okay(exc):
                 raise
@@ -189,8 +213,20 @@ class BaseSubcommand(ABC):
 
         cls.fill_subparser(parser, subparser)
 
-    def _write_profile(self):
-        from .profile import Profile
+    def update_runtime_environment(self, **kwargs):
+        """
+        Updates os.environ with the current environment
+        """
+        try:
+            runtime_env = self.env.get_data()
+        except NoSuchConfig as exc:
+            if not self.workflow.subcommand.is_env_error_okay(exc):
+                raise
+        else:
+            os.environ.update(runtime_env)
 
-        self.profile = Profile(self.workflow)
-        self.profile.write()
+    def _write_profile(self):
+        """
+        Writes a compiled compose file using the info in the yml file
+        """
+        self.workflow.profile.write()

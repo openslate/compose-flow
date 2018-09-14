@@ -14,7 +14,10 @@ class ConfigBaseSubcommand(BaseSubcommand):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._check_swarm()
+        # put this on hold for now.  in order to get this working on jenkins agents that
+        # are not swarm managers.  this test should probably occur somewhere closer to when
+        # a config is being pulled out of a local docker instance
+        # self._check_swarm()
 
         # the original values for config items whose values have been rendered
         # for example, the value for `FOO=runtime://` will be whatever $FOO is at runtime
@@ -105,5 +108,8 @@ class ConfigBaseSubcommand(BaseSubcommand):
         if not runtime_config:
             data.update(self._rendered_config)
 
+        lines = []
         for k, v in data.items():
-            buf.write(f'{k}={v}\n')
+            lines.append(f'{k}={v}')
+
+        buf.write('\n'.join(sorted(lines)))

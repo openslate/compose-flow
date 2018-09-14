@@ -5,12 +5,36 @@ import yaml
 
 from collections import OrderedDict
 
+import sh
+
 from boltons.iterutils import remap, get_path, default_enter, default_visit
 
 from .errors import EnvError, ProfileError
 
 # regular expression for finding variables in docker compose files
-VAR_RE = re.compile(r'\${(?P<varname>.*?)}')
+VAR_RE = re.compile(r'\${(?P<varname>.*?)(?P<junk>[:?].*)?}')
+
+
+def get_repo_name() -> str:
+    repo_name = os.path.basename(os.getcwd())
+
+    return repo_name
+
+
+def get_tag_version() -> str:
+    """
+    Returns the version of code as returned by the `tag-version` cli command
+    """
+    # inject the version from tag-version command into the loaded environment
+    tag_version = 'unknown'
+    try:
+        tag_version_command = getattr(sh, 'tag-version')
+    except Exception as exc:
+        print(f'Warning: unable to find tag-version ({exc})\n', file=sys.stderr)
+    else:
+        tag_version = tag_version_command().stdout.decode('utf8').strip()
+
+    return tag_version
 
 
 # https://gist.github.com/mahmoud/db02d16ac89fa401b968
@@ -82,7 +106,11 @@ def render(content: str, env: dict=None) -> str:
         except KeyError:
             raise EnvError(f'Error: varname={varname} not in environment; cannot render')
 
-        previous_idx = x.end('varname') + 1  # +1 to get rid of variable's `}`
+        end = x.end('junk')
+        if end == -1:
+            end = x.end('varname')
+
+        previous_idx = end + 1  # +1 to get rid of variable's `}`
 
     rendered += content[previous_idx:]
 

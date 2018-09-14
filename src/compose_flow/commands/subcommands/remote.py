@@ -8,7 +8,6 @@ import sys
 import sh
 
 from .base import BaseSubcommand
-from .remote_config import RemoteConfig
 
 from compose_flow import errors
 from compose_flow.errors import EnvError, ErrorMessage
@@ -102,16 +101,7 @@ class Remote(BaseSubcommand):
             pass
 
         if not self._host:
-            remote_config = RemoteConfig(self.workflow)
-
-            try:
-                data = remote_config.data
-            except errors.NotConnected as exc:
-                if not self.workflow.subcommand.is_not_connected_okay(exc):
-                    raise
-
-                return
-
+            data = self.workflow.app_config
             environment = self.args.environment
 
             try:

@@ -92,7 +92,7 @@ class Service(BaseSubcommand):
 
             print(f'\nSELECTED:\n\t{self.select_container()}')
         else:
-            # print(f'list services for env {self.env_name}\n')
+            # print(f'list services for env {self.project_name}\n')
             print(self.list_services())
 
     @functools.lru_cache()
@@ -131,7 +131,7 @@ class Service(BaseSubcommand):
         """
         Lists all the services for this stack
         """
-        command = sh.docker('stack', 'services', self.env.env_name)
+        command = sh.docker('stack', 'services', self.env.project_name)
 
         return command.stdout.decode('utf8')
 
@@ -189,10 +189,10 @@ class Service(BaseSubcommand):
         if service_name:
             return service_name
 
-        env_name = self.env.env_name
+        project_name = self.env.project_name
 
         service_name = self.args.service
         if not service_name:
             return
 
-        return f'{env_name}_{self.args.service}'
+        return f'{project_name}_{self.args.service}'

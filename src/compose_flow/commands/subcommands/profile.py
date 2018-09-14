@@ -214,11 +214,7 @@ class Profile(BaseSubcommand):
         """
         Processes the profile to generate the compose file
         """
-        try:
-            os.environ.update(self.env.data)
-        except NoSuchConfig as exc:
-            if not self.workflow.subcommand.is_env_error_okay(exc):
-                raise
+        self.update_runtime_environment()
 
         filenames = get_overlay_filenames(profile)
 
@@ -291,6 +287,11 @@ class Profile(BaseSubcommand):
             return {}
 
         profile_name = self.args.profile
+
+        # when there is no profile name, return just docker-compose.yml
+        if profile_name is None:
+            return ['docker-compose.yml']
+
         try:
             profile = config['profiles'][profile_name]
         except KeyError:

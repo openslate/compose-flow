@@ -9,6 +9,7 @@ name = "pypi"
 twine = "*"
 setuptools = "*"
 nose = "*"
+tag-version = "*"
 
 [requires]
 python_version = "3.6"

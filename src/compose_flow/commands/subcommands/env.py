@@ -8,11 +8,15 @@ import shlex
 import sys
 import tempfile
 
+from functools import lru_cache
+
 import sh
 
 from .config_base import ConfigBaseSubcommand
 
 from compose_flow import docker, errors, utils
+
+VERSION_VAR = 'VERSION'
 
 
 class Env(ConfigBaseSubcommand):
@@ -23,10 +27,11 @@ class Env(ConfigBaseSubcommand):
         super().__init__(*args, *kwargs)
 
         self._config = None
+        self._docker_image = None
 
     @property
     def config_name(self):
-        return self.workflow.args.config_name or self.env_name
+        return self.workflow.args.config_name or self.project_name
 
     @classmethod
     def fill_subparser(cls, parser, subparser):
@@ -48,10 +53,22 @@ class Env(ConfigBaseSubcommand):
 
     @property
     def data(self) -> dict:
+        return self.get_data()
+
+    @lru_cache()
+    def get_data(self, load_cf_env: bool=None) -> dict:
         """
         Returns the loaded config as a dictionary
+
+        Args:
+            load_cf_env: whether to include the current action's env.  if False, only
+                basic variables are set
         """
         data = {}
+
+        load_cf_env = load_cf_env or self.workflow.subcommand.load_cf_env
+        if not load_cf_env:
+            return data
 
         env = self.load()
         for line in env.splitlines():
@@ -71,28 +88,32 @@ class Env(ConfigBaseSubcommand):
 
             data[key] = value
 
-        # TODO: this is hacky because of the back-and-forth relationship
-        # between data() and load() ... gotta fix this.
-        docker_image = data.get('DOCKER_IMAGE')
-        if not docker_image:
-            # when a registry domain is set and the docker image is not found
-            # auto-generate the docker image name
-            registry_domain = os.environ.get('CF_DOCKER_IMAGE_PREFIX')
-            if registry_domain:
-                project_name = self.workflow.args.project_name
-                env = self.workflow.args.environment
+        # now that the data from the cf environment is parsed default the
+        # docker image to anything that was defined in there.
+        self._docker_image = data.get('DOCKER_IMAGE')
 
-                docker_image = f'{registry_domain}/{project_name}:{env}'
+        # replace variables when running a r/w command
+        subcommand = self.workflow.subcommand
 
-                # set the auto-generated docker image name in the environment
-                os.environ['DOCKER_IMAGE'] = \
-                    data['DOCKER_IMAGE'] = \
-                    docker_image
+        action = None
+        if 'action' in subcommand.args:
+            action = subcommand.args.action
 
-        if 'VERSION' in data and docker_image and ':' in docker_image:
-            data['DOCKER_IMAGE'] = f'{docker_image.split(":", 1)[0]}:{data["VERSION"]}'
+        initialize = False
+        if action == 'edit' and 'force' in subcommand.args and subcommand.args.force:
+            initialize = True
 
-        data['CF_ENV_NAME'] = self.env_name
+        # set the variables when the environment is r/w or the
+        if subcommand.rw_env or initialize:
+            data.update({
+                'CF_ENV': self.env_name,
+                'CF_PROJECT': self.project_name,
+                'DOCKER_IMAGE': f'{self.docker_image.split(":", 1)[0]}:{self.version}',
+                VERSION_VAR: self.version,
+
+                # deprecate this env var
+                'CF_ENV_NAME': self.project_name,
+            })
 
         # render placeholders
         for k, v in data.items():
@@ -130,6 +151,35 @@ class Env(ConfigBaseSubcommand):
 
         return data
 
+    @property
+    def docker_image(self) -> str:
+        """
+        Generates a docker image name for this action
+        """
+        if self._docker_image:
+            return self._docker_image
+
+        registry_domain = os.environ['CF_DOCKER_IMAGE_PREFIX']
+        project_name = self.workflow.args.project_name
+        env = self.workflow.args.environment
+
+        docker_image = f'{registry_domain}/{project_name}:{env}'
+
+        self._docker_image = self.set_docker_tag(docker_image)
+
+        return self._docker_image
+
+    def set_docker_tag(self, docker_image: str) -> str:
+        """
+        Sets the docker image tag based on the current version
+        """
+        if ':' not in docker_image:
+            raise EnvironmentError('compose-flow enforces image versioning; DOCKER_IMAGE must contain a colon')
+
+        return f'{docker_image.split(":", 1)[0]}:{self.version}'
+
+        return docker_image
+
     def is_dirty_working_copy_okay(self, exc: Exception) -> bool:
         is_dirty_working_copy_okay = super().is_dirty_working_copy_okay(exc)
 
@@ -142,8 +192,9 @@ class Env(ConfigBaseSubcommand):
         return self.is_env_modification_action()
 
     def is_missing_config_okay(self, exc):
+        subcommand = self.workflow.subcommand
         # the `force` attribute may not exist
-        force = 'force' in self.workflow.subcommand.args and self.workflow.subcommand.args.force
+        force = 'force' in subcommand.args and subcommand.args.force
 
         try:
             action = self.workflow.args.action
@@ -173,24 +224,12 @@ class Env(ConfigBaseSubcommand):
 
             self._config = ''
 
-        # inject the version from tag-version command into the loaded environment
-        tag_version = 'unknown'
-        try:
-            tag_version_command = getattr(sh, 'tag-version')
-        except Exception as exc:
-            print(f'Warning: unable to find tag-version ({exc})\n', file=sys.stderr)
-        else:
-            try:
-                tag_version = tag_version_command().stdout.decode('utf8').strip()
-            except Exception as exc:
-                # check if the subcommand is okay with a dirty working copy
-                if not self.workflow.subcommand.is_dirty_working_copy_okay(exc):
-                    raise errors.TagVersionError(f'Warning: unable to run tag-version ({exc})\n')
-
         data = self.data
 
-        version_var = 'VERSION'
-        data[version_var] = tag_version
+        subcommand = self.workflow.subcommand
+        if subcommand.rw_env or VERSION_VAR not in data:
+            data[VERSION_VAR] = self.version
+
         self._config = self.render(data)
 
         return self._config
@@ -218,18 +257,32 @@ class Env(ConfigBaseSubcommand):
         """
         Removes an environment from the swarm
         """
-        docker.remove_config(self.env_name)
+        docker.remove_config(self.project_name)
 
-    def write_tag(self) -> None:
+    @property
+    @lru_cache()
+    def version(self):
         """
-        Writes the projects tag version into the environment
+        Returns a version string for the current version of code
+        """
+        # default the tag version to the name of the environment
+        tag_version = self.workflow.args.environment
+        try:
+            tag_version = utils.get_tag_version()
+        except Exception as exc:
+            subcommand = self.workflow.subcommand
 
-        This currently writes the tag to the `DOCKER_IMAGE` variable
+            # check if the subcommand is okay with a dirty working copy
+            if not subcommand.is_dirty_working_copy_okay(exc):
+                raise errors.TagVersionError(f'Warning: unable to run tag-version ({exc})\n')
+
+        return tag_version
+
+    def write(self) -> None:
+        """
+        Writes the environment into the docker config
         """
         data = self.data
-
-        image_base = data['DOCKER_IMAGE'].rsplit(':', 1)[0]
-        data['DOCKER_IMAGE'] = f'{image_base}:{data["VERSION"]}'
 
         with tempfile.NamedTemporaryFile('w+') as fh:
             fh.write(self.render(data))
