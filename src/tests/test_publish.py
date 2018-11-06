@@ -161,3 +161,42 @@ class PublishTestCase(BaseTestCase):
         flow.run()
 
         publish.execute.assert_called_once_with('docker push test:1.3.16', _fg=True)
+
+
+    @mock.patch('compose_flow.commands.subcommands.env.utils')
+    @mock.patch('compose_flow.commands.subcommands.env.docker')
+    def test_auto_tag(self, *mocks):
+        """
+        Test that we correctly tag major, minor, latest with self.auto_tag()
+        """
+        docker_mock = mocks[0]
+        docker_mock.get_config.return_value = "FOO=1\nBAR=2"
+
+        semvar = '1.3.16'
+        image = f'test:{semvar}'
+
+        utils_mock = mocks[1]
+        utils_mock.get_tag_version.return_value = semvar
+        utils_mock.render = utils.render
+
+        command = shlex.split('-e dev publish')
+        flow = Workflow(argv=command)
+
+        publish = flow.subcommand
+        publish.build = mock.Mock()
+        publish.publish = mock.Mock()
+        publish.execute = mock.Mock()
+        publish.get_built_docker_images = mock.Mock()
+        publish.get_built_docker_images.return_value = [image]
+
+        flow.run()
+
+        desired_calls = [
+            'docker tag test:1.3.16 test:1',
+            'docker tag test:1.3.16 test:1.3',
+            'docker tag test:1.3.16 test:latest',
+        ]
+
+        mock_desired_calls = [mock.call(c, _fg=True) for c in desired_calls]
+
+        publish.execute.assert_has_calls(mock_desired_calls, True)
