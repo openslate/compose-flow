@@ -24,6 +24,7 @@ class PublishTestCase(BaseTestCase):
         flow = Workflow(argv=command)
 
         flow.subcommand.build = mock.Mock()
+        flow.subcommand.auto_tag = mock.Mock()
         flow.subcommand.push = mock.Mock()
 
         flow.run()
