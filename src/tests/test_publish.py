@@ -92,3 +92,72 @@ class PublishTestCase(BaseTestCase):
 
         self.assertEqual(utils_mock.get_tag_version.return_value, env.data['VERSION'])
         self.assertEqual(f'test.registry/testdirname:{new_version}', env.data['DOCKER_IMAGE'])
+
+    @mock.patch('compose_flow.commands.subcommands.env.utils')
+    @mock.patch('compose_flow.commands.subcommands.env.docker')
+    def test_get_docker_images_for_push(self, *mocks):
+        """
+        When publishing a versioned docker image, we should automatically create major, minor, and latest releases.
+        """
+        docker_mock = mocks[0]
+        docker_mock.get_config.return_value = "FOO=1\nBAR=2"
+
+        semvar = '1.3.16'
+        image = f'test:{semvar}'
+
+        utils_mock = mocks[1]
+        utils_mock.get_tag_version.return_value = semvar
+        utils_mock.render = utils.render
+
+        command = shlex.split('-e dev publish')
+        flow = Workflow(argv=command)
+
+        publish = flow.subcommand
+        publish.build = mock.Mock()
+        publish.auto_tag = mock.Mock()
+        publish.execute = mock.Mock()
+        publish.get_built_docker_images = mock.Mock()
+        publish.get_built_docker_images.return_value = [image]
+
+        flow.run()
+
+        desired_calls = [
+            'docker push test:1',
+            'docker push test:1.3',
+            'docker push test:1.3.16',
+            'docker push test:latest',
+        ]
+
+        mock_desired_calls = [mock.call(c, _fg=True) for c in desired_calls]
+
+        publish.execute.assert_has_calls(mock_desired_calls, True)
+
+    @mock.patch('compose_flow.commands.subcommands.env.utils')
+    @mock.patch('compose_flow.commands.subcommands.env.docker')
+    def test_skip_docker_publish_auto_tag(self, *mocks):
+        """
+        When publishing a versioned docker image, skip auto-tag with --skip-auto-tag.
+        """
+        docker_mock = mocks[0]
+        docker_mock.get_config.return_value = "FOO=1\nBAR=2"
+
+        semvar = '1.3.16'
+        image = f'test:{semvar}'
+
+        utils_mock = mocks[1]
+        utils_mock.get_tag_version.return_value = semvar
+        utils_mock.render = utils.render
+
+        command = shlex.split('-e dev publish --skip-auto-tag')
+        flow = Workflow(argv=command)
+
+        publish = flow.subcommand
+        publish.build = mock.Mock()
+        publish.auto_tag = mock.Mock()
+        publish.execute = mock.Mock()
+        publish.get_built_docker_images = mock.Mock()
+        publish.get_built_docker_images.return_value = [image]
+
+        flow.run()
+
+        publish.execute.assert_called_once_with('docker push test:1.3.16', _fg=True)
