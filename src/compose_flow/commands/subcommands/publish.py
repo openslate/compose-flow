@@ -1,6 +1,8 @@
 import logging
 import re
 
+import semantic_version
+
 from functools import lru_cache
 
 from .base import BaseSubcommand
@@ -67,13 +69,14 @@ class Publish(BaseSubcommand):
             image_name = image.split(':')[0]
 
             tag = image.split(':')[-1]
-            semver = re.match(r'^(\d+)\.(\d+)\.?(\d*)$', tag)
 
-            if semver:
-                if semver.group(2):
-                    auto_tags.append(f'{image_name}:{semver.group(1)}')
-                if semver.group(3):
-                    auto_tags.append(f'{image_name}:{semver.group(1)}.{semver.group(2)}')
+            semver = semantic_version.Version(tag)
+
+            # only build major and minor if this is a clean patch or minor release
+            if not (semver.prerelease and semver.build):
+                auto_tags.append(f'{image_name}:{semver.major}')
+
+                auto_tags.append(f'{image_name}:{semver.major}.{semver.minor}')
 
             auto_tags.append(':'.join([image_name, 'latest']))
 
