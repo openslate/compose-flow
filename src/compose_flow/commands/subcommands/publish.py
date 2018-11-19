@@ -70,15 +70,19 @@ class Publish(BaseSubcommand):
 
             tag = image.split(':')[-1]
 
-            semver = semantic_version.Version(tag)
+            try:
+                semver = semantic_version.Version(tag)
 
-            # only build major and minor if this is a clean patch or minor release
-            if not (semver.prerelease and semver.build):
-                auto_tags.append(f'{image_name}:{semver.major}')
+                # only build major and minor if this is a clean patch or minor release
+                if not (semver.prerelease and semver.build):
+                    auto_tags.append(f'{image_name}:{semver.major}')
 
-                auto_tags.append(f'{image_name}:{semver.major}.{semver.minor}')
+                    auto_tags.append(f'{image_name}:{semver.major}.{semver.minor}')
 
-            auto_tags.append(':'.join([image_name, 'latest']))
+                auto_tags.append(':'.join([image_name, 'latest']))
+
+            except ValueError:
+                self.logger.warning(f'{tag} is not a valid semver, skipping auto-tags.')
 
             new_tags[image] = auto_tags
 

@@ -163,6 +163,35 @@ class PublishTestCase(BaseTestCase):
 
         publish.execute.assert_called_once_with('docker push test:1.3.16', _fg=True)
 
+    @mock.patch('compose_flow.commands.subcommands.env.utils')
+    @mock.patch('compose_flow.commands.subcommands.env.docker')
+    def test_skip_publish_on_build_or_prerelease(self, *mocks):
+        """
+        When publishing something other than a major, minor, patch, skip the auto-tags.
+        """
+        docker_mock = mocks[0]
+        docker_mock.get_config.return_value = "FOO=1\nBAR=2"
+
+        semvar = '1.3.16rc-auto1'
+        image = f'test:{semvar}'
+
+        utils_mock = mocks[1]
+        utils_mock.get_tag_version.return_value = semvar
+        utils_mock.render = utils.render
+
+        command = shlex.split('-e dev publish')
+        flow = Workflow(argv=command)
+
+        publish = flow.subcommand
+        publish.build = mock.Mock()
+        publish.auto_tag = mock.Mock()
+        publish.execute = mock.Mock()
+        publish.get_built_docker_images = mock.Mock()
+        publish.get_built_docker_images.return_value = [image]
+
+        flow.run()
+
+        publish.execute.assert_called_once_with('docker push test:1.3.16rc-auto1', _fg=True)
 
     @mock.patch('compose_flow.commands.subcommands.env.utils')
     @mock.patch('compose_flow.commands.subcommands.env.docker')
