@@ -67,7 +67,7 @@ class Publish(BaseSubcommand):
             image_name = image.split(':')[0]
 
             tag = image.split(':')[-1]
-            semver = re.match(r'(\d+)\.(\d+)\.?(\d*)', tag)
+            semver = re.match(r'^(\d+)\.(\d+)\.?(\d*)$', tag)
 
             if semver:
                 if semver.group(2):
