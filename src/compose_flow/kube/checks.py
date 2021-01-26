@@ -58,7 +58,7 @@ class BaseChecker(ABC):
 
     def _load_rendered_yaml(self, rendered: str) -> dict:
         """Load the rendered YAML which is passed in to the `check` method."""
-        return [d for d in yaml.load_all(rendered)]
+        return [d for d in yaml.safe_load_all(rendered)]
 
 
 class ManifestChecker(BaseChecker):
