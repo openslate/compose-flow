@@ -171,7 +171,7 @@ class KubeMixIn(object):
 
             raise
 
-        secret_yaml = yaml.load(raw_secret.stdout)
+        secret_yaml = yaml.safe_load(raw_secret.stdout)
         payload = secret_yaml.get("data")
         if not payload or "_env" not in payload:
             raise errors.NoSuchConfig("secret name={self.secret_name} is empty")
