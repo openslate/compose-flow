@@ -43,10 +43,10 @@ RUN curl -fsSLO https://github.com/rancher/cli/releases/download/${RANCHER_VERSI
  && rm rancher-linux-amd64-${RANCHER_VERSION}.tar.gz
 
 # Install Helm client
-ENV HELM_VERSION="v2.16.7"
-ENV HELM_SHA="7556a4c2dfc41d31f7a7252f129eff9fe030eccf"
-RUN curl -fsSLO https://storage.googleapis.com/kubernetes-helm/helm-${HELM_VERSION}-linux-amd64.tar.gz \
- && echo "$HELM_SHA helm-${HELM_VERSION}-linux-amd64.tar.gz" | sha1sum -c - \
+ENV HELM_VERSION="v3.5.2"
+ENV HELM_SHA="01b317c506f8b6ad60b11b1dc3f093276bb703281cb1ae01132752253ec706a2"
+RUN curl -fsSLO https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz \
+ && echo "$HELM_SHA helm-${HELM_VERSION}-linux-amd64.tar.gz" | sha256sum -c - \
  && tar xzvf helm-${HELM_VERSION}-linux-amd64.tar.gz --strip 1 \
     -C /usr/local/bin \
  && chmod +x /usr/local/bin/helm \
