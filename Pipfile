@@ -23,6 +23,3 @@ watchdog = "*"
 pylama = "*"
 pylint = "*"
 pylama-pylint = "*"
-
-[requires]
-python_version = "3.6"
