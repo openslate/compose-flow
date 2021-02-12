@@ -382,15 +382,15 @@ class KubeMixIn(object):
 
         if app_name in app_list:
             return upgrade_command_method(
-                app_name, rendered_path, chart, version, use_answers
+                app_name, rendered_path, namespace, chart, version, use_answers
             )
         else:
             return install_command_method(
                 app_name, rendered_path, namespace, chart, version, use_answers
             )
 
-    def list_helm_apps(self) -> str:
-        return str(self.execute("helm ls -q --all")).split("\n")
+    def list_helm_apps(self) -> List[str]:
+        return str(self.execute("helm ls -q --all --all-namespaces")).split("\n")
 
     def get_helm_app_install_command(
         self,
@@ -401,17 +401,18 @@ class KubeMixIn(object):
         version: str,
         use_answers: bool = False,
     ):
-        return f"helm install --name {app_name} -f {rendered_path} --namespace {namespace} --version {version} {chart}"
+        return f"helm install -f {rendered_path} --namespace {namespace} --version {version} {app_name} {chart}"
 
     def get_helm_app_upgrade_command(
         self,
         app_name: str,
         rendered_path: str,
+        namespace: str,
         chart: str,
         version: str,
         use_answers: bool = False,
     ):
-        return f"helm upgrade {app_name} {chart} -f {rendered_path} --version {version}"
+        return f"helm upgrade -f {rendered_path} --namespace {namespace} --version {version} {app_name} {chart}"
 
     def list_pods(self, namespace: str = None):
         if namespace:
@@ -444,6 +445,7 @@ class KubeMixIn(object):
         self,
         app_name: str,
         rendered_path: str,
+        namespace: str,  # unused here, included for parity with Helm
         chart: str,
         version: str,
         use_answers: bool,
