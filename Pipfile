@@ -10,7 +10,7 @@ jinja2 = "*"
 sh = "*"
 tag-version = "*"
 tabulate = "*"
-docker-compose = "*"
+docker-compose = "==1.27.4"
 semver = "*"
 influxstats = "==0.0.10rc5"
 
@@ -23,6 +23,3 @@ watchdog = "*"
 pylama = "*"
 pylint = "*"
 pylama-pylint = "*"
-
-[requires]
-python_version = "3.6"
