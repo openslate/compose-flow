@@ -1,4 +1,4 @@
-FROM python:3.7-bullseye
+FROM python:3.9-bullseye
 LABEL maintainer="code@doubleverify.com"
 
 ARG user=swarmclient
