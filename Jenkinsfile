@@ -8,7 +8,7 @@ def customPublishTask = {
 def publishWhen = { env.TAG_NAME }
 
 openslatePipeline {
-    mentions = '@roberto <@UB22LFDEJ>'
+    mentions = '<@U02SGRQEKFY>'
     deployEnv = 'prod'
     lint = true
     test = true
