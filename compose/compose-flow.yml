@@ -27,10 +27,10 @@ remotes:
 
 tasks:
   blacken:
-    command: compose-flow compose run --rm app black --target-version py38 .
+    command: compose-flow compose run --rm app black --target-version py39 .
 
   blacken-check:
-    command: compose-flow compose run --rm app black --target-version py38 --check .
+    command: compose-flow compose run --rm app black --target-version py39 --check .
 
   publish:
     command: compose-flow compose run -u root:docker --rm app /bin/bash ./scripts/publish.sh
@@ -42,7 +42,7 @@ tasks:
     command: compose-flow compose run --rm app /bin/bash -c 'pylama ./src'
 
   jenkinslint:
-    command: compose-flow compose run -u root:docker --rm app /bin/bash -c 'black --target-version py36 --target-version py37 --target-version py38 --check . && (pylama -r results/pylama.log -f pylint setup.py ./scripts ./src || /bin/true)'
+    command: compose-flow compose run -u root:docker --rm app /bin/bash -c 'black --target-version py39 --check . && (pylama -r results/pylama.log -f pylint setup.py ./scripts ./src || /bin/true)'
 
   jenkinstest:
     command: compose-flow compose run -u root:docker --rm app /bin/bash -c 'nosetests -v ./src --with-xunit --xunit-file=results/report.xml || /bin/true'
