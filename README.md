@@ -76,3 +76,25 @@ For publishing: `compose-flow publish`.
 For deploying as configured above: `compose-flow -e local deploy`.
 
 More information at [docs/advanced.md](docs/advanced.md)
+
+
+## Compose Flow Development
+
+First you setup some default evn vars
+```compose-flow -e local env edit```
+
+```
+CF_ENV=local
+CF_ENV_NAME=compose-flow
+CF_PROJECT=compose-flow
+```
+
+Then to build the container
+```compose-flow -e local compose build```
+
+Then to shell into the container
+```compose-flow -e local compose run --rm app /bin/bash```
+
+
+Testing can then be ran via pytest 
+```compose-flow -e local compose run --rm app /bin/bash -c pytest```

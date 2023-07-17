@@ -132,7 +132,7 @@ class Service(BaseSubcommand):
         items = []
 
         try:
-            output = proc.stdout.decode("utf8").splitlines()[1:]
+            output = proc.splitlines()[1:]
 
             # check to see there's at least one container listed
             output[0]
@@ -153,7 +153,7 @@ class Service(BaseSubcommand):
         """
         proc = self.execute(f"docker stack services {self.workflow.config_name}")
 
-        return proc.stdout.decode("utf8")
+        return proc
 
     def run_service(self):
         args = self.workflow.args

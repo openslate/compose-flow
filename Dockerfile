@@ -1,5 +1,5 @@
 FROM python:3.6-stretch
-MAINTAINER osslabs <code@openslatedata.com>
+LABEL maintainer="code@doubleverify.com"
 
 ARG user=swarmclient
 ARG group=swarmclient

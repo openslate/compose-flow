@@ -144,4 +144,4 @@ def get_docker_output(command: str, env: dict) -> str:
 
         raise DockerError(exc)
 
-    return proc.stdout.decode("utf8")
+    return proc

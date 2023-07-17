@@ -75,7 +75,7 @@ def get_tag_version(default: str = None) -> str:
             "Warning: tag-version failed", shell_exception=exc, tag_version=tag_version
         )
     else:
-        tag_version = proc.stdout.decode("utf8").strip()
+        tag_version = proc.strip()
 
     return tag_version
 
