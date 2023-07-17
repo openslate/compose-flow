@@ -1,5 +1,5 @@
-FROM python:3.11-bullseye
-MAINTAINER osslabs <code@openslatedata.com>
+FROM python:3.7-bullseye
+LABEL maintainer="code@doubleverify.com"
 
 ARG user=swarmclient
 ARG group=swarmclient
