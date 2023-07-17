@@ -58,7 +58,6 @@ class Env(BaseSubcommand):
         self._rendered_config = {}
 
     def _get_default_backend(self, remote):
-
         app_config = self.workflow.app_config
 
         remote_section = app_config.get("remotes", {}).get(remote, {})
