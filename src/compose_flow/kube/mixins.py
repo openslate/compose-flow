@@ -1,3 +1,5 @@
+# pylint: disable=E1101  # disable no-member error
+
 """
 Compose subcommand
 """
