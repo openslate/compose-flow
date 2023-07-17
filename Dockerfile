@@ -1,4 +1,4 @@
-FROM python:3.6-stretch
+FROM python:3.7-bullseye
 MAINTAINER osslabs <code@openslatedata.com>
 
 ARG user=swarmclient
