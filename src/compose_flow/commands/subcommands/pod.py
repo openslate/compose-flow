@@ -26,7 +26,6 @@ from compose_flow import errors, shell
 
 
 class Pod(BaseSubcommand, KubeMixIn):
-
     command_name = "pod"
 
     setup_environment = True

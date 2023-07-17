@@ -5,8 +5,7 @@ from compose_flow.kube.mixins import KubeMixIn
 
 class KubeMixInTestCase(TestCase):
     def test_get_secret_name_param(self, *mocks):
-        """Ensure the name param is used when getting a secret
-        """
+        """Ensure the name param is used when getting a secret"""
         mixin = KubeMixIn()
         mixin.workflow = mock.Mock(config_name="BAD")
         mixin.namespace = "something"

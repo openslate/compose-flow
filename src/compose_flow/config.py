@@ -91,8 +91,7 @@ def get_config(workflow: "Workflow") -> DictNone:
 
 
 def read_project_config(workflow: "Workflow") -> dict:
-    """Reads the project config from the filesystem
-    """
+    """Reads the project config from the filesystem"""
     data = {}
 
     logger = get_logger()

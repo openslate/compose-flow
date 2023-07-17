@@ -15,7 +15,7 @@ semver = "*"
 influxstats = "==0.0.10rc5"
 
 [dev-packages]
-black = "==19.3b0"
+black = "*"
 twine = "*"
 setuptools = "*"
 nose = "*"

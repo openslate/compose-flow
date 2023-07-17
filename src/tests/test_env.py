@@ -96,8 +96,7 @@ class EnvTestCase(BaseTestCase):
 
     @mock.patch("compose_flow.commands.subcommands.env.get_backend")
     def test_empty_env_value(self, *mocks):
-        """Ensure that a value can be empty if the line ends with an equals
-        """
+        """Ensure that a value can be empty if the line ends with an equals"""
         get_backend_mock = mocks[0]
         get_backend_mock.return_value.read.return_value = "FOO="
 
@@ -186,8 +185,7 @@ class EnvTestCase(BaseTestCase):
 
     @mock.patch("compose_flow.commands.subcommands.env.get_backend")
     def test_rendered_extends(self, *mocks):
-        """Ensure the rendered config includes extended variables
-        """
+        """Ensure the rendered config includes extended variables"""
 
         def backend_read(config_name):
             data = "CF_ENV_EXTENDS_BASENAME=foo"
