@@ -10,9 +10,9 @@ jinja2 = "*"
 sh = "*"
 tag-version = "*"
 tabulate = "*"
-docker-compose = "==1.27.4"
+docker-compose = "*"
 semver = "*"
-influxstats = "==0.0.10rc5"
+influxstats = "*"
 
 [dev-packages]
 black = "*"
