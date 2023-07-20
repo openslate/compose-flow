@@ -1,10 +1,9 @@
+import logging
 import os
 import pathlib
 import typing
 
 from functools import lru_cache
-
-from influxstats.logging import get_logger
 
 from compose_flow.utils import remerge, yaml_dump, yaml_load
 
@@ -55,7 +54,7 @@ def get_base_config_name(workflow: "Workflow") -> str:
     Args:
         workflow: The running workflow
     """
-    logger = get_logger()
+    logger = logging.getLogger(__name__)
 
     base_config_name = workflow.config_name
 
@@ -94,7 +93,7 @@ def read_project_config(workflow: "Workflow") -> dict:
     """Reads the project config from the filesystem"""
     data = {}
 
-    logger = get_logger()
+    logger = logging.getLogger(__name__)
 
     compose_flow_filename = workflow.args.compose_flow_filename
 

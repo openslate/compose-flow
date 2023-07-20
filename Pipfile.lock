@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "89da7005cc749fd6dcab6ad6a19b6c225e381c4d5dd9a517b98994fc2c6151a6"
+            "sha256": "7dd6933e48750b1df28fb1c9a69a8105d8579ec6b28627c3f28ae114bb410840"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -291,13 +291,6 @@
             "markers": "python_version >= '3.5'",
             "version": "==3.4"
         },
-        "influxstats": {
-            "hashes": [
-                "sha256:e4ef7c3da58c0b89ce64568bcc66789d0a5c608fa170e3f651a44b4af7233d5c"
-            ],
-            "index": "pypi",
-            "version": "==0.0.9"
-        },
         "jinja2": {
             "hashes": [
                 "sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852",
@@ -521,13 +514,6 @@
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "version": "==1.16.0"
-        },
-        "statsd": {
-            "hashes": [
-                "sha256:99763da81bfea8daf6b3d22d11aaccb01a8d0f52ea521daab37e758a4ca7d128",
-                "sha256:c2676519927f7afade3723aca9ca8ea986ef5b059556a980a867721ca69df093"
-            ],
-            "version": "==4.0.1"
         },
         "tabulate": {
             "hashes": [
