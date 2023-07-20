@@ -75,4 +75,6 @@ RUN chown -R ${user}:${group} ${HOME} ${SRC_DIR}
 
 USER ${user}
 
+RUN git config --global --add safe.directory ${SRC_DIR}
+
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
