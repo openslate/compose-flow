@@ -12,12 +12,12 @@ args = parser.parse_args()
 
 
 proc = shell.execute('docker config ls --format "{{ .Name }}"', os.environ)
-for config_name in proc.stdout.decode("utf8").splitlines():
+for config_name in proc.splitlines():
     proc = shell.execute(
         f'docker config inspect {config_name} --format "{{{{ json .Spec.Data }}}}"',
         os.environ,
     )
-    buf_b64 = proc.stdout.decode("utf8").replace('"', "")
+    buf_b64 = proc.replace('"', "")
 
     if not os.path.exists(args.root):
         os.makedirs(args.root)
