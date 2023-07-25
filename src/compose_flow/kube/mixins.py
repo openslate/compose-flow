@@ -98,7 +98,7 @@ class KubeMixIn(object):
         try:
             self.execute("kubectl config current-context")
         except sh.ErrorReturnCode_1 as exc:  # pylint: disable=E1101
-            message = exc.stderr.decode("utf8").strip().lower()
+            message = str(exc).lower()
 
             if "current-context is not set" in message:
                 raise errors.MissingKubeContext(
@@ -114,7 +114,7 @@ class KubeMixIn(object):
         try:
             self.execute(f"{self.kubectl_command} get namespace {self.namespace}")
         except sh.ErrorReturnCode_1 as exc:  # pylint: disable=E1101
-            message = exc.strip().lower()
+            message = str(exc).lower()
 
             if f'namespaces "{self.namespace}" not found' in message:
                 self.logger.warning(
@@ -158,7 +158,7 @@ class KubeMixIn(object):
             raw_secret = self._get_secret(name)
             self.secret_exists = True
         except sh.ErrorReturnCode_1 as exc:  # pylint: disable=E1101
-            message = exc.stderr.decode("utf8").strip().lower()
+            message = str(exc).lower()
 
             if f'secrets "{self.secret_name}" not found' in message:
                 self.secret_exists = False
@@ -189,7 +189,7 @@ class KubeMixIn(object):
                     f"{self.kubectl_command} create secret generic --namespace {self.namespace} {self.secret_name}"
                 )
             except sh.ErrorReturnCode_1 as exc:  # pylint: disable=E1101
-                message = exc.strip().lower()
+                message = str(exc).lower()
 
                 if f'secrets "{self.secret_name}" already exists' not in message:
                     raise
@@ -234,7 +234,7 @@ class KubeMixIn(object):
         for err in NONFATAL_ERROR_MESSAGES:
             if err in output:
                 output = output.replace(err, "")
-        return yaml.load(output)
+        return yaml.load(output, Loader=yaml.FullLoader)
 
     @property
     def cluster_name(self):
@@ -464,7 +464,7 @@ class KubeMixIn(object):
             try:
                 self.execute(creation_command)
             except sh.ErrorReturnCode_1 as exc:  # pylint: disable=E1101
-                message = exc.strip()
+                message = str(exc)
                 if "code=AlreadyExists" in message:
                     raise errors.RancherNamespaceAlreadyExists(
                         f"Namespace {namespace} already exists in another project!"
