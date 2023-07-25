@@ -131,12 +131,7 @@ class KubeMixIn(object):
 
         If not found, attempt to create it.
         """
-        namespaces = (
-            self.execute("rancher namespace ls --quiet")
-            .stdout.decode("utf8")
-            .strip()
-            .split("\n")
-        )
+        namespaces = self.execute("rancher namespace ls --quiet").strip().split("\n")
 
         if self.namespace not in namespaces:
             self.logger.warning(
