@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-PyYAML = "*"
+PyYAML = "==5.3.1"
 boltons = "*"
 jinja2 = "*"
 sh = "*"
