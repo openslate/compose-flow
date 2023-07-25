@@ -82,7 +82,7 @@ class Remote(BaseSubcommand):
         except shell.ErrorReturnCode_1:
             pass
         else:
-            for item in proc.stdout.decode("utf8").strip().splitlines():
+            for item in proc.strip().splitlines():
                 yield int(item)
 
     def get_socket(self):

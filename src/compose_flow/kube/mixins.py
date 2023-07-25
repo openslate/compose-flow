@@ -114,7 +114,7 @@ class KubeMixIn(object):
         try:
             self.execute(f"{self.kubectl_command} get namespace {self.namespace}")
         except sh.ErrorReturnCode_1 as exc:  # pylint: disable=E1101
-            message = exc.stderr.decode("utf8").strip().lower()
+            message = exc.strip().lower()
 
             if f'namespaces "{self.namespace}" not found' in message:
                 self.logger.warning(
@@ -189,7 +189,7 @@ class KubeMixIn(object):
                     f"{self.kubectl_command} create secret generic --namespace {self.namespace} {self.secret_name}"
                 )
             except sh.ErrorReturnCode_1 as exc:  # pylint: disable=E1101
-                message = exc.stderr.decode("utf8").strip().lower()
+                message = exc.strip().lower()
 
                 if f'secrets "{self.secret_name}" already exists' not in message:
                     raise
@@ -312,7 +312,7 @@ class KubeMixIn(object):
             self.logger.info(name_context_switch_command)
             self.execute(name_context_switch_command)
         except sh.ErrorReturnCode_1 as exc:  # pylint: disable=E1101
-            stderr = str(exc.stderr)
+            stderr = str(exc)
             if "Multiple resources of type project found for name" in stderr:
                 self.logger.info(
                     "Multiple clusters have a project called %s - "
@@ -464,7 +464,7 @@ class KubeMixIn(object):
             try:
                 self.execute(creation_command)
             except sh.ErrorReturnCode_1 as exc:  # pylint: disable=E1101
-                message = exc.stderr.decode("utf8").strip()
+                message = exc.strip()
                 if "code=AlreadyExists" in message:
                     raise errors.RancherNamespaceAlreadyExists(
                         f"Namespace {namespace} already exists in another project!"
