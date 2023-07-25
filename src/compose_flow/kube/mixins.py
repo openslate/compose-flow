@@ -303,12 +303,7 @@ class KubeMixIn(object):
         # Get the project name specified in compose-flow.yml
         target_project_name = self.project_name
 
-        current_context = (
-            self.execute("rancher context current")
-            .stdout.decode("utf8")
-            .strip()
-            .split(" ")
-        )
+        current_context = self.execute("rancher context current").strip().split(" ")
         correct_cluster = current_context[0] == f"Cluster:{self.cluster_name}"
         correct_project = current_context[1] == f"Project:{target_project_name}"
 
