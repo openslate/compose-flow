@@ -8,3 +8,5 @@ results
 build/
 dist/
 .eggs/
+
+tst.py
