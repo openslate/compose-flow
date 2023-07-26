@@ -31,7 +31,7 @@ remotes:
   test:
     backend: rancher
     rancher:
-      project: Reporting
+      project: Ops
       cluster: prod
   dev:
     backend: rancher
