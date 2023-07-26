@@ -19,29 +19,27 @@ pip install compose-flow
 
 Create the file `~/.compose/config.yml` with the following sections.
 
-### Build
+- Build
+- Remotes
+- Options (for local dev)
 
+ex:
 ```yaml
 build:
-  # the image prefix can be your Docker Hub username or a private registry address
-  image_prefix: myprivateregistry.com
-```
-
-### Remotes
-
-```yaml
+  image_prefix: registry.osslabs.net
 remotes:
-  local:
-    backend: swarm
   test:
     backend: rancher
     rancher:
-      project: Ops
+      project: Reporting
       cluster: prod
   dev:
     backend: rancher
   prod:
     backend: rancher
+options:
+  local:
+    dirty_working_copy_okay: True    
 ```
 
 With this in place you're ready to go onto your project setup.
