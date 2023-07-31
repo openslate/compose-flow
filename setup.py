@@ -59,10 +59,11 @@ def get_required_packages():
 setup(
     name="compose-flow",
     url="https://github.com/openslate/compose-flow",
-    author="OpenSlate",
-    author_email="code@openslate.com",
+    author="DoubleVerify",
+    author_email="code@doubleverify.com",
     use_scm_version=True,
     description="codified workflows for docker compose",
+    license_files=("LICENSE",),
     long_description=readme(),
     long_description_content_type="text/markdown",
     package_dir={"": "src"},

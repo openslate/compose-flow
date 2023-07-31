@@ -46,7 +46,7 @@ class PassthroughBaseSubcommand(BaseSubcommand):
         if not args.dry_run:
             res = self.execute(command_s, _fg=True)
             if res and log_output:
-                self.logger.info(res.stdout.decode("utf-8").strip())
+                self.logger.info(res.strip())
 
     @property
     def logger(self) -> logging.Logger:

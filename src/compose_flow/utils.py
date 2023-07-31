@@ -63,10 +63,7 @@ def get_tag_version(default: str = None) -> str:
     try:
         proc = shell.execute("tag-version version --format docker", os.environ)
     except Exception as exc:
-        try:
-            error_message = exc.stderr.decode("utf8")  # pylint: disable=E1101
-        except:
-            error_message = exc.stderr  # pylint: disable=E1101
+        error_message = str(exc)
 
         if "not clean" in error_message:
             tag_version = f"{tag_version}-dirty"
@@ -75,7 +72,7 @@ def get_tag_version(default: str = None) -> str:
             "Warning: tag-version failed", shell_exception=exc, tag_version=tag_version
         )
     else:
-        tag_version = proc.stdout.decode("utf8").strip()
+        tag_version = proc.strip()
 
     return tag_version
 

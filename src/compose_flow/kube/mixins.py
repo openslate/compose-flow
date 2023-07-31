@@ -1,3 +1,5 @@
+# pylint: disable=E1101  # disable no-member error
+
 """
 Compose subcommand
 """
@@ -96,7 +98,7 @@ class KubeMixIn(object):
         try:
             self.execute("kubectl config current-context")
         except sh.ErrorReturnCode_1 as exc:  # pylint: disable=E1101
-            message = exc.stderr.decode("utf8").strip().lower()
+            message = str(exc).lower()
 
             if "current-context is not set" in message:
                 raise errors.MissingKubeContext(
@@ -112,7 +114,7 @@ class KubeMixIn(object):
         try:
             self.execute(f"{self.kubectl_command} get namespace {self.namespace}")
         except sh.ErrorReturnCode_1 as exc:  # pylint: disable=E1101
-            message = exc.stderr.decode("utf8").strip().lower()
+            message = str(exc).lower()
 
             if f'namespaces "{self.namespace}" not found' in message:
                 self.logger.warning(
@@ -129,12 +131,7 @@ class KubeMixIn(object):
 
         If not found, attempt to create it.
         """
-        namespaces = (
-            self.execute("rancher namespace ls --quiet")
-            .stdout.decode("utf8")
-            .strip()
-            .split("\n")
-        )
+        namespaces = self.execute("rancher namespace ls --quiet").strip().split("\n")
 
         if self.namespace not in namespaces:
             self.logger.warning(
@@ -161,7 +158,7 @@ class KubeMixIn(object):
             raw_secret = self._get_secret(name)
             self.secret_exists = True
         except sh.ErrorReturnCode_1 as exc:  # pylint: disable=E1101
-            message = exc.stderr.decode("utf8").strip().lower()
+            message = str(exc).lower()
 
             if f'secrets "{self.secret_name}" not found' in message:
                 self.secret_exists = False
@@ -192,7 +189,7 @@ class KubeMixIn(object):
                     f"{self.kubectl_command} create secret generic --namespace {self.namespace} {self.secret_name}"
                 )
             except sh.ErrorReturnCode_1 as exc:  # pylint: disable=E1101
-                message = exc.stderr.decode("utf8").strip().lower()
+                message = str(exc).lower()
 
                 if f'secrets "{self.secret_name}" already exists' not in message:
                     raise
@@ -237,7 +234,7 @@ class KubeMixIn(object):
         for err in NONFATAL_ERROR_MESSAGES:
             if err in output:
                 output = output.replace(err, "")
-        return yaml.load(output)
+        return yaml.load(output, Loader=yaml.FullLoader)
 
     @property
     def cluster_name(self):
@@ -301,12 +298,7 @@ class KubeMixIn(object):
         # Get the project name specified in compose-flow.yml
         target_project_name = self.project_name
 
-        current_context = (
-            self.execute("rancher context current")
-            .stdout.decode("utf8")
-            .strip()
-            .split(" ")
-        )
+        current_context = self.execute("rancher context current").strip().split(" ")
         correct_cluster = current_context[0] == f"Cluster:{self.cluster_name}"
         correct_project = current_context[1] == f"Project:{target_project_name}"
 
@@ -320,7 +312,7 @@ class KubeMixIn(object):
             self.logger.info(name_context_switch_command)
             self.execute(name_context_switch_command)
         except sh.ErrorReturnCode_1 as exc:  # pylint: disable=E1101
-            stderr = str(exc.stderr)
+            stderr = str(exc)
             if "Multiple resources of type project found for name" in stderr:
                 self.logger.info(
                     "Multiple clusters have a project called %s - "
@@ -472,7 +464,7 @@ class KubeMixIn(object):
             try:
                 self.execute(creation_command)
             except sh.ErrorReturnCode_1 as exc:  # pylint: disable=E1101
-                message = exc.stderr.decode("utf8").strip()
+                message = str(exc)
                 if "code=AlreadyExists" in message:
                     raise errors.RancherNamespaceAlreadyExists(
                         f"Namespace {namespace} already exists in another project!"

@@ -4,18 +4,17 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-PyYAML = "*"
+PyYAML = "==5.3.1"
 boltons = "*"
 jinja2 = "*"
 sh = "*"
 tag-version = "*"
 tabulate = "*"
-docker-compose = "==1.27.4"
+docker-compose = "*"
 semver = "*"
-influxstats = "==0.0.10rc5"
 
 [dev-packages]
-black = "==19.3b0"
+black = "*"
 twine = "*"
 setuptools = "*"
 nose = "*"

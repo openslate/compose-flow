@@ -1,5 +1,5 @@
-FROM python:3.6-stretch
-MAINTAINER osslabs <code@openslatedata.com>
+FROM python:3.9-bullseye
+LABEL maintainer="code@doubleverify.com"
 
 ARG user=swarmclient
 ARG group=swarmclient
@@ -74,5 +74,7 @@ RUN python setup.py install
 RUN chown -R ${user}:${group} ${HOME} ${SRC_DIR}
 
 USER ${user}
+
+RUN git config --global --add safe.directory ${SRC_DIR}
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

@@ -30,7 +30,7 @@ class SwarmBackend(BaseBackend):
         try:
             self.execute("docker config ls")  # pylint: disable=E1101
         except sh.ErrorReturnCode_1 as exc:  # pylint: disable=E1101
-            message = exc.stderr.decode("utf8").strip().lower()
+            message = exc.strip().lower()
 
             if "this node is not a swarm manager" in message:
                 self.init_swarm(prompt=True)
